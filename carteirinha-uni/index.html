@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Carteirinha - Preenchimento</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f1f1f1;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:20px;
+}
+
+#canvasWrap{
+  width: auto;
+  height: auto;
+  background:#f1f1f1;
+  display:flex;
+  flex-direction: column;
+  gap:12px;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.field {
+  width: 100%;
+  max-width: 500px;
+  font-size: 20px;
+  line-height: 1.4;
+  padding: 8px;
+  border:1px solid #ccc;
+  border-radius:4px;
+}
+
+#controls{
+  margin-top:14px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+}
+
+.btn{
+  padding:10px 14px;
+  border-radius:6px;
+  border:0;
+  background:#0b5bd4;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+.btn.secondary { background:#2d9c3a; }
+</style>
+</head>
+<body>
+
+<div>
+  <div id="canvasWrap">
+    <input id="anoEmissao" class="field" placeholder="ANO DE EMISSÃO" style="width:200px; text-align:center; color:#0b2b54; font-weight:700; font-size:16px;">
+    <input id="nome" class="field" placeholder="NOME COMPLETO" />
+    <input id="cpf" class="field" placeholder="CPF" />
+    <input id="rg" class="field" placeholder="RG" />
+    <input id="data" class="field" placeholder="NASCIMENTO" />
+    <input id="telefone" class="field" placeholder="TELEFONE" />
+    <input id="endereco" class="field" placeholder="ENDEREÇO" />
+    <input id="cep" class="field" placeholder="CEP" />
+    <input id="cidade" class="field" placeholder="CIDADE" />
+    <input id="emissao" class="field" placeholder="DATA DA EMISSÃO" />
+    <input id="local" class="field" placeholder="LOCAL DO CURSO" />
+    <input id="curso" class="field" placeholder="CURSO" />
+  </div>
+
+  <div id="controls">
+    <input id="uploadFoto" type="file" accept="image/*">
+    <button id="downloadBtn" class="btn secondary">Baixar carteirinha (PNG)</button>
+    <button id="resetBtn" class="btn" style="background:#777">Limpar campos</button>
+  </div>
+</div>
+
+<script>
+// Upload da foto
+const uploadInput = document.getElementById('uploadFoto');
+let fotoDataURL = '';
+uploadInput.addEventListener('change', e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => fotoDataURL = ev.target.result;
+  reader.readAsDataURL(f);
+});
+
+// Download da carteirinha
+document.getElementById('downloadBtn').addEventListener('click', async ()=>{
+  const canvas = document.createElement('canvas');
+  canvas.width = 2362;
+  canvas.height = 827;
+  const ctx = canvas.getContext('2d');
+
+  // Fundo
+  const bg = new Image();
+  bg.src = 'carteirnha 2026.png';
+  await new Promise(r=>{ bg.onload=r; bg.onerror=r; });
+  ctx.drawImage(bg,0,0,canvas.width,canvas.height);
+
+  // Campos e coordenadas fixas do template
+  const campos = [
+    {id:'nome', x:55, y:153},
+    {id:'cpf', x:55, y:240},
+    {id:'rg', x:621, y:240},
+    {id:'data', x:55, y:330},
+    {id:'telefone', x:472, y:330},
+    {id:'endereco', x:55, y:415},
+    {id:'cep', x:55, y:502},
+    {id:'cidade', x:435, y:502},
+    {id:'emissao', x:820, y:502},
+    {id:'local', x:55, y:590},
+    {id:'curso', x:620, y:590},
+  ];
+
+  // Desenhar textos
+  campos.forEach(f=>{
+    const el = document.getElementById(f.id);
+    ctx.font = `700 32px Arial`;
+    ctx.fillStyle = '#0b2b54';
+    ctx.textBaseline = 'top';
+    ctx.fillText(el.value || '', f.x, f.y);
+  });
+
+  // Ano de Emissão sobre a foto
+  const anoInput = document.getElementById('anoEmissao');
+  if(anoInput.value){
+    const fbX=1598, fbY=329, fbW=353;
+    ctx.font='700 42px Arial';
+    ctx.fillStyle='#0b2b54';
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText(anoInput.value, fbX+fbW/2, fbY - 40);
+  }
+
+  // Foto 3x4
+  if(fotoDataURL){
+    const fbW=353, fbH=498, fbX=1598, fbY=329;
+    const tempImg=new Image();
+    tempImg.src=fotoDataURL;
+    await new Promise(r=>{tempImg.onload=r;});
+    const scale = Math.max(fbW/tempImg.width, fbH/tempImg.height);
+    const dw=tempImg.width*scale;
+    const dh=tempImg.height*scale;
+    const sx=(dw-fbW)/(2*scale);
+    const sy=(dh-fbH)/(2*scale);
+    ctx.drawImage(tempImg, sx, sy, tempImg.width-sx*2, tempImg.height-sy*2, fbX, fbY, fbW, fbH);
+  }
+
+  // Download
+  const link=document.createElement('a');
+  link.download='carteirinha_preenchida.png';
+  link.href=canvas.toDataURL('image/png');
+  link.click();
+});
+
+// Limpar campos
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  document.querySelectorAll('.field').forEach(i=>i.value='');
+  fotoDataURL='';
+});
+
+// Máscaras automáticas
+function setMask(input, type){
+  input.addEventListener('input', ()=>{
+    let v=input.value;
+    if(['cpf','rg','cep','telefone','data'].includes(type)) v=v.replace(/\D/g,'');
+
+    if(type==='cpf') v=v.slice(0,11)
+                      .replace(/(\d{3})(\d)/,'$1.$2')
+                      .replace(/(\d{3})(\d)/,'$1.$2')
+                      .replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+    if(type==='rg')  v=v.slice(0,9)
+                      .replace(/(\d{2})(\d)/,'$1.$2')
+                      .replace(/(\d{3})(\d)/,'$1.$2')
+                      .replace(/(\d{3})(\d{1})$/,'$1-$2');
+    if(type==='cep') v=v.slice(0,8)
+                      .replace(/(\d{2})(\d)/,'$1.$2')
+                      .replace(/(\d{3})(\d{1,3})$/,'$1-$2');
+    if(type==='telefone') v=v.slice(0,11)
+                           .replace(/(\d{2})(\d)/,'($1) $2')
+                           .replace(/(\d{5})(\d)/,'$1-$2');
+    if(type==='data') v=v.slice(0,8)
+                       .replace(/(\d{2})(\d)/,'$1/$2')
+                       .replace(/(\d{2})(\d)/,'$1/$2');
+    input.value=v;
+  });
+}
+
+setMask(document.getElementById('cpf'),'cpf');
+setMask(document.getElementById('rg'),'rg');
+setMask(document.getElementById('cep'),'cep');
+setMask(document.getElementById('telefone'),'telefone');
+setMask(document.getElementById('data'),'data');
+setMask(document.getElementById('emissao'),'data');
+
+</script>
+</body>
+</html>
