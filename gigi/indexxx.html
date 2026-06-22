@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>❤️ Country Beat ❤️</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    overflow:hidden;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:15px;
+    background:linear-gradient(-45deg,#ff4d8d,#ff85b3,#ff6b81,#ff9ecf);
+    background-size:400% 400%;
+    animation:bg 12s ease infinite;
+}
+
+@keyframes bg{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+.card{
+    width:100%;
+    max-width:500px;
+    background:rgba(255,255,255,.15);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:30px;
+    padding:30px 20px;
+    text-align:center;
+    color:white;
+    box-shadow:0 15px 50px rgba(0,0,0,.2);
+    z-index:10;
+}
+
+h1{
+    font-size:clamp(2rem,6vw,2.8rem);
+    margin-bottom:20px;
+}
+
+p{
+    font-size:clamp(1.1rem,4vw,1.4rem);
+    line-height:1.7;
+    margin-bottom:25px;
+}
+
+.emoji{
+    font-size:clamp(4rem,15vw,6rem);
+    margin-bottom:15px;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+    50%{
+        transform:scale(1.12);
+    }
+}
+
+button{
+    border:none;
+    cursor:pointer;
+    padding:16px 30px;
+    border-radius:999px;
+    font-size:1.1rem;
+    font-weight:bold;
+}
+
+#sim{
+    background:white;
+    color:#ff4d8d;
+    box-shadow:0 0 25px rgba(255,255,255,.8);
+}
+
+#nao{
+    position:fixed;
+    background:#ff1744;
+    color:white;
+    z-index:99999;
+}
+
+.whatsapp{
+    display:inline-block;
+    text-decoration:none;
+    background:#25D366;
+    color:white;
+    padding:18px 30px;
+    border-radius:999px;
+    font-size:1.1rem;
+    font-weight:bold;
+}
+
+.fade{
+    animation:fade .5s ease;
+}
+
+@keyframes fade{
+    from{
+        opacity:0;
+        transform:translateY(20px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.heart{
+    position:absolute;
+    pointer-events:none;
+    animation:subir linear forwards;
+}
+
+@keyframes subir{
+    from{
+        transform:translateY(100vh);
+        opacity:1;
+    }
+    to{
+        transform:translateY(-120px);
+        opacity:0;
+    }
+}
+
+@media(max-width:480px){
+
+    .card{
+        padding:25px 15px;
+    }
+
+    button,
+    .whatsapp{
+        width:100%;
+        max-width:280px;
+    }
+
+}
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+
+    <div class="emoji">💖</div>
+
+    <h1>Convite Especial</h1>
+
+    <p>
+        Você quer ir no <strong>Country Beat</strong> comigo? ❤️
+    </p>
+
+    <button id="sim">SIM 😍</button>
+
+</div>
+
+<button id="nao">NÃO 😅</button>
+
+<script>
+
+const card = document.getElementById("card");
+const nao = document.getElementById("nao");
+
+function moverBotao(){
+
+    const largura = window.innerWidth - 140;
+    const altura = window.innerHeight - 80;
+
+    nao.style.left = Math.random() * largura + "px";
+    nao.style.top = Math.random() * altura + "px";
+}
+
+moverBotao();
+
+document.addEventListener("mousemove",(e)=>{
+
+    const rect = nao.getBoundingClientRect();
+
+    const centroX = rect.left + rect.width/2;
+    const centroY = rect.top + rect.height/2;
+
+    const distancia = Math.hypot(
+        e.clientX - centroX,
+        e.clientY - centroY
+    );
+
+    if(distancia < 180){
+        moverBotao();
+    }
+});
+
+nao.addEventListener("touchstart",(e)=>{
+    e.preventDefault();
+    moverBotao();
+});
+
+nao.addEventListener("touchmove",(e)=>{
+    e.preventDefault();
+    moverBotao();
+});
+
+nao.addEventListener("click", moverBotao);
+
+document.getElementById("sim").addEventListener("click",()=>{
+
+    nao.style.display = "none";
+
+    card.innerHTML = `
+        <div class="fade">
+            <div class="emoji">💘</div>
+
+            <h1>Obaaaa! ❤️</h1>
+
+            <p>
+                Eu levo você! 💕<br><br>
+               
+            </p>
+
+            <button id="continuar">Continuar 💖</button>
+        </div>
+    `;
+
+    document.getElementById("continuar").addEventListener("click",()=>{
+
+        card.innerHTML = `
+            <div class="fade">
+
+                <div class="emoji">🥰</div>
+
+                <h1>Perfeito! ❤️</h1>
+
+                <p>
+                    aperta nesse botaoo pfvvv.
+                </p>
+
+                <a
+                class="whatsapp"
+                href="https://wa.me/5514991011914?text=Eu%20confirmo%20sim%20%3C3"
+                target="_blank">
+                    💬 aquiii
+                </a>
+
+            </div>
+        `;
+
+    });
+
+});
+
+function criarCoracao(){
+
+    const heart = document.createElement("div");
+
+    const emojis = ["❤️","💖","💕","💘","💝"];
+
+    heart.className = "heart";
+    heart.innerHTML = emojis[Math.floor(Math.random()*emojis.length)];
+
+    heart.style.left = Math.random()*100 + "vw";
+    heart.style.fontSize = (20 + Math.random()*30) + "px";
+    heart.style.animationDuration = (4 + Math.random()*4) + "s";
+
+    document.body.appendChild(heart);
+
+    setTimeout(()=>{
+        heart.remove();
+    },8000);
+}
+
+setInterval(criarCoracao,250);
+
+</script>
+
+</body>
+</html>
